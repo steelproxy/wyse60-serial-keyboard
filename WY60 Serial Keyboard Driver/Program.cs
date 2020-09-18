@@ -179,7 +179,7 @@ namespace SerialTerminal
             }
             for (; ; )
             {
-                string inputstring = _serialPort.ReadExisting(); ;
+                string inputstring = _serialPort.ReadExisting();
                 foreach (char a in inputstring)
                 {
 
