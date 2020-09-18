@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Windows.Forms;
 
@@ -17,7 +14,7 @@ namespace Interceptor
         /// Determines whether the driver traps no keyboard events, all events, or a range of events in-between (down only, up only...etc). Set this before loading otherwise the driver will not filter any events and no keypresses can be sent.
         /// </summary>
         public KeyboardFilterMode KeyboardFilterMode { get; set; }
-        
+
         /// <summary>
         /// Determines whether the driver traps no events, all events, or a range of events in-between. Set this before loading otherwise the driver will not filter any events and no mouse clicks can be sent.
         /// </summary>
@@ -59,15 +56,20 @@ namespace Interceptor
          */
         public bool Load()
         {
-            if (IsLoaded) return false;
+            if (IsLoaded)
+            {
+                return false;
+            }
 
             context = InterceptionDriver.CreateContext();
 
             if (context != IntPtr.Zero)
             {
-                callbackThread = new Thread(new ThreadStart(DriverCallback));
-                callbackThread.Priority = ThreadPriority.Highest;
-                callbackThread.IsBackground = true;
+                callbackThread = new Thread(new ThreadStart(DriverCallback))
+                {
+                    Priority = ThreadPriority.Highest,
+                    IsBackground = true
+                };
                 callbackThread.Start();
 
                 IsLoaded = true;
@@ -87,7 +89,10 @@ namespace Interceptor
          */
         public void Unload()
         {
-            if (!IsLoaded) return;
+            if (!IsLoaded)
+            {
+                return;
+            }
 
             if (context != IntPtr.Zero)
             {
@@ -99,8 +104,8 @@ namespace Interceptor
 
         private void DriverCallback()
         {
-            InterceptionDriver.SetFilter(context, InterceptionDriver.IsKeyboard, (Int32) KeyboardFilterMode);
-            InterceptionDriver.SetFilter(context, InterceptionDriver.IsMouse, (Int32) MouseFilterMode);
+            InterceptionDriver.SetFilter(context, InterceptionDriver.IsKeyboard, (int)KeyboardFilterMode);
+            InterceptionDriver.SetFilter(context, InterceptionDriver.IsMouse, (int)MouseFilterMode);
 
             Stroke stroke = new Stroke();
 
@@ -110,7 +115,7 @@ namespace Interceptor
                 {
                     if (OnMousePressed != null)
                     {
-                        var args = new MousePressedEventArgs() { X = stroke.Mouse.X, Y = stroke.Mouse.Y, State = stroke.Mouse.State, Rolling = stroke.Mouse.Rolling };
+                        MousePressedEventArgs args = new MousePressedEventArgs() { X = stroke.Mouse.X, Y = stroke.Mouse.Y, State = stroke.Mouse.State, Rolling = stroke.Mouse.Rolling };
                         OnMousePressed(this, args);
 
                         if (args.Handled)
@@ -128,7 +133,7 @@ namespace Interceptor
                 {
                     if (OnKeyPressed != null)
                     {
-                        var args = new KeyPressedEventArgs() { Key = stroke.Key.Code, State = stroke.Key.State};
+                        KeyPressedEventArgs args = new KeyPressedEventArgs() { Key = stroke.Key.Code, State = stroke.Key.State };
                         OnKeyPressed(this, args);
 
                         if (args.Handled)
@@ -150,17 +155,20 @@ namespace Interceptor
         public void SendKey(Keys key, KeyState state)
         {
             Stroke stroke = new Stroke();
-            KeyStroke keyStroke = new KeyStroke();
-
-            keyStroke.Code = key;
-            keyStroke.State = state;
+            KeyStroke keyStroke = new KeyStroke
+            {
+                Code = key,
+                State = state
+            };
 
             stroke.Key = keyStroke;
 
             InterceptionDriver.Send(context, deviceId, ref stroke, 1);
 
             if (KeyPressDelay > 0)
+            {
                 Thread.Sleep(KeyPressDelay);
+            }
         }
 
         /// <summary>
@@ -171,7 +179,9 @@ namespace Interceptor
             SendKey(key, KeyState.Down);
 
             if (KeyPressDelay > 0)
+            {
                 Thread.Sleep(KeyPressDelay);
+            }
 
             SendKey(key, KeyState.Up);
         }
@@ -192,15 +202,19 @@ namespace Interceptor
         {
             foreach (char letter in text)
             {
-                var tuple = CharacterToKeysEnum(letter);
+                Tuple<Keys, bool> tuple = CharacterToKeysEnum(letter);
 
                 if (tuple.Item2 == true) // We need to press shift to get the next character
+                {
                     SendKey(Keys.LeftShift, KeyState.Down);
+                }
 
                 SendKey(tuple.Item1);
 
                 if (tuple.Item2 == true)
+                {
                     SendKey(Keys.LeftShift, KeyState.Up);
+                }
             }
         }
 
@@ -209,138 +223,138 @@ namespace Interceptor
         /// </summary>
         private Tuple<Keys, bool> CharacterToKeysEnum(char c)
         {
-            switch (Char.ToLower(c))
+            switch (char.ToLower(c))
             {
                 case 'a':
-                    return new Tuple<Keys,bool>(Keys.A, false);
+                    return new Tuple<Keys, bool>(Keys.A, false);
                 case 'b':
-                    return new Tuple<Keys,bool>(Keys.B, false);
+                    return new Tuple<Keys, bool>(Keys.B, false);
                 case 'c':
-                    return new Tuple<Keys,bool>(Keys.C, false);
+                    return new Tuple<Keys, bool>(Keys.C, false);
                 case 'd':
-                    return new Tuple<Keys,bool>(Keys.D, false);
+                    return new Tuple<Keys, bool>(Keys.D, false);
                 case 'e':
-                    return new Tuple<Keys,bool>(Keys.E, false);
+                    return new Tuple<Keys, bool>(Keys.E, false);
                 case 'f':
-                    return new Tuple<Keys,bool>(Keys.F, false);
+                    return new Tuple<Keys, bool>(Keys.F, false);
                 case 'g':
-                    return new Tuple<Keys,bool>(Keys.G, false);
+                    return new Tuple<Keys, bool>(Keys.G, false);
                 case 'h':
-                    return new Tuple<Keys,bool>(Keys.H, false);
+                    return new Tuple<Keys, bool>(Keys.H, false);
                 case 'i':
-                    return new Tuple<Keys,bool>(Keys.I, false);
+                    return new Tuple<Keys, bool>(Keys.I, false);
                 case 'j':
-                    return new Tuple<Keys,bool>(Keys.J, false);
+                    return new Tuple<Keys, bool>(Keys.J, false);
                 case 'k':
-                    return new Tuple<Keys,bool>(Keys.K, false);
+                    return new Tuple<Keys, bool>(Keys.K, false);
                 case 'l':
-                    return new Tuple<Keys,bool>(Keys.L, false);
+                    return new Tuple<Keys, bool>(Keys.L, false);
                 case 'm':
-                    return new Tuple<Keys,bool>(Keys.M, false);
+                    return new Tuple<Keys, bool>(Keys.M, false);
                 case 'n':
-                    return new Tuple<Keys,bool>(Keys.N, false);
+                    return new Tuple<Keys, bool>(Keys.N, false);
                 case 'o':
-                    return new Tuple<Keys,bool>(Keys.O, false);
+                    return new Tuple<Keys, bool>(Keys.O, false);
                 case 'p':
-                    return new Tuple<Keys,bool>(Keys.P, false);
+                    return new Tuple<Keys, bool>(Keys.P, false);
                 case 'q':
-                    return new Tuple<Keys,bool>(Keys.Q, false);
+                    return new Tuple<Keys, bool>(Keys.Q, false);
                 case 'r':
-                    return new Tuple<Keys,bool>(Keys.R, false);
+                    return new Tuple<Keys, bool>(Keys.R, false);
                 case 's':
-                    return new Tuple<Keys,bool>(Keys.S, false);
+                    return new Tuple<Keys, bool>(Keys.S, false);
                 case 't':
-                    return new Tuple<Keys,bool>(Keys.T, false);
+                    return new Tuple<Keys, bool>(Keys.T, false);
                 case 'u':
-                    return new Tuple<Keys,bool>(Keys.U, false);
+                    return new Tuple<Keys, bool>(Keys.U, false);
                 case 'v':
-                    return new Tuple<Keys,bool>(Keys.V, false);
+                    return new Tuple<Keys, bool>(Keys.V, false);
                 case 'w':
-                    return new Tuple<Keys,bool>(Keys.W, false);
+                    return new Tuple<Keys, bool>(Keys.W, false);
                 case 'x':
-                    return new Tuple<Keys,bool>(Keys.X, false);
+                    return new Tuple<Keys, bool>(Keys.X, false);
                 case 'y':
-                    return new Tuple<Keys,bool>(Keys.Y, false);
+                    return new Tuple<Keys, bool>(Keys.Y, false);
                 case 'z':
-                    return new Tuple<Keys,bool>(Keys.Z, false);
+                    return new Tuple<Keys, bool>(Keys.Z, false);
                 case '1':
-                    return new Tuple<Keys,bool>(Keys.One, false);
+                    return new Tuple<Keys, bool>(Keys.One, false);
                 case '2':
-                    return new Tuple<Keys,bool>(Keys.Two, false);
+                    return new Tuple<Keys, bool>(Keys.Two, false);
                 case '3':
-                    return new Tuple<Keys,bool>(Keys.Three, false);
+                    return new Tuple<Keys, bool>(Keys.Three, false);
                 case '4':
-                    return new Tuple<Keys,bool>(Keys.Four, false);
+                    return new Tuple<Keys, bool>(Keys.Four, false);
                 case '5':
-                    return new Tuple<Keys,bool>(Keys.Five, false);
+                    return new Tuple<Keys, bool>(Keys.Five, false);
                 case '6':
-                    return new Tuple<Keys,bool>(Keys.Six, false);
+                    return new Tuple<Keys, bool>(Keys.Six, false);
                 case '7':
-                    return new Tuple<Keys,bool>(Keys.Seven, false);
+                    return new Tuple<Keys, bool>(Keys.Seven, false);
                 case '8':
-                    return new Tuple<Keys,bool>(Keys.Eight, false);
+                    return new Tuple<Keys, bool>(Keys.Eight, false);
                 case '9':
-                    return new Tuple<Keys,bool>(Keys.Nine, false);
+                    return new Tuple<Keys, bool>(Keys.Nine, false);
                 case '0':
-                    return new Tuple<Keys,bool>(Keys.Zero, false);
+                    return new Tuple<Keys, bool>(Keys.Zero, false);
                 case '-':
-                    return new Tuple<Keys,bool>(Keys.DashUnderscore, false);
+                    return new Tuple<Keys, bool>(Keys.DashUnderscore, false);
                 case '+':
-                    return new Tuple<Keys,bool>(Keys.PlusEquals, false);
+                    return new Tuple<Keys, bool>(Keys.PlusEquals, false);
                 case '[':
-                    return new Tuple<Keys,bool>(Keys.OpenBracketBrace, false);
+                    return new Tuple<Keys, bool>(Keys.OpenBracketBrace, false);
                 case ']':
-                    return new Tuple<Keys,bool>(Keys.CloseBracketBrace, false);
+                    return new Tuple<Keys, bool>(Keys.CloseBracketBrace, false);
                 case ';':
-                    return new Tuple<Keys,bool>(Keys.SemicolonColon, false);
+                    return new Tuple<Keys, bool>(Keys.SemicolonColon, false);
                 case '\'':
-                    return new Tuple<Keys,bool>(Keys.SingleDoubleQuote, false);
+                    return new Tuple<Keys, bool>(Keys.SingleDoubleQuote, false);
                 case ',':
-                    return new Tuple<Keys,bool>(Keys.CommaLeftArrow, false);
+                    return new Tuple<Keys, bool>(Keys.CommaLeftArrow, false);
                 case '.':
-                    return new Tuple<Keys,bool>(Keys.PeriodRightArrow, false);
+                    return new Tuple<Keys, bool>(Keys.PeriodRightArrow, false);
                 case '/':
-                    return new Tuple<Keys,bool>(Keys.ForwardSlashQuestionMark, false);
+                    return new Tuple<Keys, bool>(Keys.ForwardSlashQuestionMark, false);
                 case '{':
-                    return new Tuple<Keys,bool>(Keys.OpenBracketBrace, true);
+                    return new Tuple<Keys, bool>(Keys.OpenBracketBrace, true);
                 case '}':
-                    return new Tuple<Keys,bool>(Keys.CloseBracketBrace, true);
+                    return new Tuple<Keys, bool>(Keys.CloseBracketBrace, true);
                 case ':':
-                    return new Tuple<Keys,bool>(Keys.SemicolonColon, true);
+                    return new Tuple<Keys, bool>(Keys.SemicolonColon, true);
                 case '\"':
-                    return new Tuple<Keys,bool>(Keys.SingleDoubleQuote, true);
+                    return new Tuple<Keys, bool>(Keys.SingleDoubleQuote, true);
                 case '<':
-                    return new Tuple<Keys,bool>(Keys.CommaLeftArrow, true);
+                    return new Tuple<Keys, bool>(Keys.CommaLeftArrow, true);
                 case '>':
-                    return new Tuple<Keys,bool>(Keys.PeriodRightArrow, true);
+                    return new Tuple<Keys, bool>(Keys.PeriodRightArrow, true);
                 case '?':
-                    return new Tuple<Keys,bool>(Keys.ForwardSlashQuestionMark, true);
+                    return new Tuple<Keys, bool>(Keys.ForwardSlashQuestionMark, true);
                 case '\\':
-                    return new Tuple<Keys,bool>(Keys.BackslashPipe, false);
+                    return new Tuple<Keys, bool>(Keys.BackslashPipe, false);
                 case '|':
-                    return new Tuple<Keys,bool>(Keys.BackslashPipe, true);
+                    return new Tuple<Keys, bool>(Keys.BackslashPipe, true);
                 case '`':
-                    return new Tuple<Keys,bool>(Keys.Tilde, false);
+                    return new Tuple<Keys, bool>(Keys.Tilde, false);
                 case '~':
-                    return new Tuple<Keys,bool>(Keys.Tilde, true);
+                    return new Tuple<Keys, bool>(Keys.Tilde, true);
                 case '!':
-                    return new Tuple<Keys,bool>(Keys.One, true);
+                    return new Tuple<Keys, bool>(Keys.One, true);
                 case '@':
-                    return new Tuple<Keys,bool>(Keys.Two, true);
+                    return new Tuple<Keys, bool>(Keys.Two, true);
                 case '#':
-                    return new Tuple<Keys,bool>(Keys.Three, true);
+                    return new Tuple<Keys, bool>(Keys.Three, true);
                 case '$':
-                    return new Tuple<Keys,bool>(Keys.Four, true);
+                    return new Tuple<Keys, bool>(Keys.Four, true);
                 case '%':
-                    return new Tuple<Keys,bool>(Keys.Five, true);
+                    return new Tuple<Keys, bool>(Keys.Five, true);
                 case '^':
-                    return new Tuple<Keys,bool>(Keys.Six, true);
+                    return new Tuple<Keys, bool>(Keys.Six, true);
                 case '&':
-                    return new Tuple<Keys,bool>(Keys.Seven, true);
+                    return new Tuple<Keys, bool>(Keys.Seven, true);
                 case '*':
-                    return new Tuple<Keys,bool>(Keys.Eight, true);
+                    return new Tuple<Keys, bool>(Keys.Eight, true);
                 case '(':
-                    return new Tuple<Keys,bool>(Keys.Nine, true);
+                    return new Tuple<Keys, bool>(Keys.Nine, true);
                 case ')':
                     return new Tuple<Keys, bool>(Keys.Zero, true);
                 case ' ':
@@ -353,9 +367,10 @@ namespace Interceptor
         public void SendMouseEvent(MouseState state)
         {
             Stroke stroke = new Stroke();
-            MouseStroke mouseStroke = new MouseStroke();
-
-            mouseStroke.State = state;
+            MouseStroke mouseStroke = new MouseStroke
+            {
+                State = state
+            };
 
             if (state == MouseState.ScrollUp)
             {
@@ -388,7 +403,7 @@ namespace Interceptor
         public void ScrollMouse(ScrollDirection direction)
         {
             switch (direction)
-            { 
+            {
                 case ScrollDirection.Down:
                     SendMouseEvent(MouseState.ScrollDown);
                     break;
@@ -406,10 +421,11 @@ namespace Interceptor
             if (useDriver)
             {
                 Stroke stroke = new Stroke();
-                MouseStroke mouseStroke = new MouseStroke();
-
-                mouseStroke.X = deltaX;
-                mouseStroke.Y = deltaY;
+                MouseStroke mouseStroke = new MouseStroke
+                {
+                    X = deltaX,
+                    Y = deltaY
+                };
 
                 stroke.Mouse = mouseStroke;
                 stroke.Mouse.Flags = MouseFlags.MoveRelative;
@@ -418,7 +434,7 @@ namespace Interceptor
             }
             else
             {
-                var currentPos = Cursor.Position;
+                Point currentPos = Cursor.Position;
                 Cursor.Position = new Point(currentPos.X + deltaX, currentPos.Y - deltaY); // Coordinate system for y: 0 begins at top, and bottom of screen has the largest number
             }
         }
@@ -431,10 +447,11 @@ namespace Interceptor
             if (useDriver)
             {
                 Stroke stroke = new Stroke();
-                MouseStroke mouseStroke = new MouseStroke();
-
-                mouseStroke.X = x;
-                mouseStroke.Y = y;
+                MouseStroke mouseStroke = new MouseStroke
+                {
+                    X = x,
+                    Y = y
+                };
 
                 stroke.Mouse = mouseStroke;
                 stroke.Mouse.Flags = MouseFlags.MoveAbsolute;
@@ -447,4 +464,3 @@ namespace Interceptor
         }
     }
 }
- 

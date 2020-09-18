@@ -84,8 +84,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>Z:\Code\WY60\Interception\bin\Debug</OutDir>
-    <IntDir>Z:\Code\WY60\Interception\obj\Debug</IntDir>
+    <OutDir>$(SolutionDir)Interception\bin\Debug</OutDir>
+    <IntDir>$(SolutionDir)Interception\obj\Debug</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
@@ -130,7 +130,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
-      <Command>copy "Z:\Code\WY60\Interception\bin\Debug\Interception.dll" "Z:\Code\WY60\WY60 Serial Keyboard Driver\bin\Debug\interception.dll"</Command>
+      <Command>copy "$(SolutionDir)Interception\bin\Debug\Interception.dll" "$(SolutionDir)WY60 Serial Keyboard Driver\bin\Debug\interception.dll"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

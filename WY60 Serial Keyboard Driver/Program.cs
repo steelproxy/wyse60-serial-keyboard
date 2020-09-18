@@ -1,16 +1,15 @@
-﻿using System;
+﻿using Interceptor;
+using System;
 using System.IO.Ports;
-using Interceptor;
-using System.Windows.Forms;
 using Keys = Interceptor.Keys;
 
 namespace SerialTerminal
 {
-    class Program
+    internal class Program
     {
-        static public Tuple<Keys, bool> CharacterToKeysEnum(char c)
+        public static Tuple<Keys, bool> CharacterToKeysEnum(char c)
         {
-            switch (Char.ToLower(c))
+            switch (char.ToLower(c))
             {
                 case 'a':
                     return new Tuple<Keys, bool>(Keys.A, false);
@@ -146,37 +145,49 @@ namespace SerialTerminal
                     return new Tuple<Keys, bool>(Keys.Zero, true);
                 case ' ':
                     return new Tuple<Keys, bool>(Keys.Space, true);
-                case (char) 8: // adjusted for wy60
+                case (char)8: // adjusted for wy60
                     return new Tuple<Keys, bool>(Keys.Backspace, true);
-                case (char) 13:
+                case (char)13:
                     return new Tuple<Keys, bool>(Keys.Enter, false);
-                case (char) 20:
+                case (char)20:
                     return new Tuple<Keys, bool>(Keys.F1, false);
                 default:
                     return new Tuple<Keys, bool>(Keys.ForwardSlashQuestionMark, true);
             }
         }
-        static SerialPort _serialPort;
-        static void Main(string[] args)
+
+        private static SerialPort _serialPort;
+
+        private static void Main(string[] args)
         {
             Input input = new Input();
-            KeysConverter keyconvertobj = new KeysConverter();
+            Tuple<Keys, bool> tuple;
             int arrow_escape = 0;
+
+            Console.WriteLine("Loading inteception driver...");
             input.KeyboardFilterMode = KeyboardFilterMode.All;
             input.Load();
             if (!input.IsLoaded)
+            {
+                Console.WriteLine("Failed to load driver!");
                 return;
-            _serialPort = new SerialPort("COM8", 19200, Parity.None, 8, StopBits.One);
-            _serialPort.Handshake = Handshake.None;
-            Console.WriteLine("Reading terminal settings...");
-            _serialPort.ReadTimeout = 5000000;
-            _serialPort.WriteTimeout = 500;
+            }
+
+            Console.WriteLine("Opening serial port...");
+            _serialPort = new SerialPort("COM8", 19200, Parity.None, 8, StopBits.One)
+            {
+                Handshake = Handshake.None,
+                ReadTimeout = SerialPort.InfiniteTimeout,
+                WriteTimeout = 500
+            };
             _serialPort.Open();
-            if(!_serialPort.IsOpen)
+            if (!_serialPort.IsOpen)
             {
                 Console.WriteLine("Could not open serial port!");
                 return;
             }
+
+            Console.WriteLine("Reading from serial port...");
             for (; ; )
             {
                 string inputstring = _serialPort.ReadExisting();
@@ -189,10 +200,10 @@ namespace SerialTerminal
                         break;
                     }
                     bool caps = false;
-                    var tuple = CharacterToKeysEnum(a);
+                    tuple = CharacterToKeysEnum(a);
                     if (a == 27 || arrow_escape > 0) // gotta read next two values for arrows
                     {
-                        switch(inputstring)
+                        switch (inputstring)
                         {
                             case "\u001B\u004F\u0041":
                                 Console.WriteLine("got up");
@@ -214,7 +225,7 @@ namespace SerialTerminal
                                 input.SendKey(Keys.Left);
                                 break;
 
-                        // F1 in OG Tuple
+                            // F1 in OG Tuple
 
                             case "\u001B\u005B\u003f\u0033\u0069":
                                 Console.WriteLine("got f2");
@@ -295,10 +306,17 @@ namespace SerialTerminal
                         _serialPort.DiscardOutBuffer();
                         continue;
                     }
+
                     if (a > 40 && a < 91)
-                        caps = true;    
-                    if(caps == true)
+                    {
+                        caps = true;
+                    }
+
+                    if (caps == true)
+                    {
                         input.SendKey(Keys.LeftShift, KeyState.Down);
+                    }
+
                     input.SendKey(tuple.Item1);
                     if (caps == true)
                     {
